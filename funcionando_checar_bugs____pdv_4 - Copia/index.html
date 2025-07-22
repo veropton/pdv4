@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <title>PDV Gás & Água - Profissional</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <!-- Bibliotecas para Exportação -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+  <style id="estilos-customizados"></style>
+</head>
+
+<body class="bg-gray-100 flex flex-col h-screen">
+
+  <section id="tela-login" class="tela ativo flex-col items-center justify-center h-full w-full bg-gray-200">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center">
+      <img id="logo-login" src="" alt="Logo da Empresa" class="mx-auto h-16 mb-4 hidden">
+      <h1 id="titulo-login" class="text-3xl font-bold text-gray-800 mb-2">Miro Gás & Água</h1>
+      <p class="text-gray-500 mb-6">Acesso ao PDV</p>
+      <form id="form-login">
+        <div class="mb-4 text-left">
+          <label for="usuario" class="font-semibold text-gray-600 mb-1 block">Usuário</label>
+          <input type="text" id="usuario" required
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-6 text-left">
+          <label for="senha" class="font-semibold text-gray-600 mb-1 block">Senha</label>
+          <input type="password" id="senha" required
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+        </div>
+        <p id="login-error-message" class="text-red-500 text-sm mb-4 h-5"></p>
+        <button type="submit"
+          class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 btn-primario">Entrar</button>
+      </form>
+      <a href="#" id="link-recuperar-senha" class="text-sm text-blue-600 hover:underline mt-4 inline-block">Esqueci a
+        minha senha</a>
+    </div>
+  </section>
+
+  <section id="tela-recuperar-senha" class="tela flex-col items-center justify-center h-full w-full bg-gray-200">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Recuperar Senha</h2>
+      <div id="recuperar-passo-1">
+        <label for="usuario-recuperar" class="font-semibold text-gray-600 mb-1 block">Digite seu nome de usuário</label>
+        <input type="text" id="usuario-recuperar" required class="w-full p-3 border rounded-lg mb-4">
+        <button id="btn-avancar-recuperacao"
+          class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Avançar</button>
+      </div>
+      <div id="recuperar-passo-2" class="hidden">
+        <p class="font-semibold text-gray-700">Pergunta de Segurança:</p>
+        <p id="pergunta-seguranca-texto" class="bg-gray-100 p-3 rounded-lg my-2"></p>
+        <label for="resposta-recuperar" class="font-semibold text-gray-600 mb-1 block">Sua Resposta</label>
+        <input type="text" id="resposta-recuperar" required class="w-full p-3 border rounded-lg mb-4">
+        <button id="btn-verificar-resposta"
+          class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Verificar</button>
+      </div>
+      <div id="recuperar-passo-3" class="hidden">
+        <label for="nova-senha-recuperar" class="font-semibold text-gray-600 mb-1 block">Digite a nova senha</label>
+        <input type="password" id="nova-senha-recuperar" required class="w-full p-3 border rounded-lg mb-4">
+        <button id="btn-salvar-nova-senha" class="w-full bg-green-500 text-white p-3 rounded-lg font-bold">Salvar Nova
+          Senha</button>
+      </div>
+      <p id="recuperar-error-message" class="text-red-500 text-sm mt-4 h-5 text-center"></p>
+      <a href="#" id="link-voltar-login"
+        class="text-sm text-blue-600 hover:underline mt-4 inline-block w-full text-center">Voltar para o Login</a>
+    </div>
+  </section>
+
+  <div id="app-container" class="hidden flex flex-col h-screen">
+    <header class="text-white p-4 flex items-center justify-center shadow-md z-10">
+      <img id="logo-header" src="" alt="Logo" class="h-8 mr-4 hidden">
+      <h1 id="titulo-header" class="text-2xl font-bold">Miro Gás & Água PDV</h1>
+    </header>
+
+    <nav class="bg-white shadow-sm flex justify-center flex-wrap gap-2 p-2">
+      <button id="nav-vendas" class="nav-btn px-4 py-2 rounded-lg font-semibold">🛒 Vendas</button>
+      <button id="nav-gerenciar" class="nav-btn px-4 py-2 rounded-lg font-semibold">📦 Produtos</button>
+      <button id="nav-clientes" class="nav-btn px-4 py-2 rounded-lg font-semibold">👥 Clientes</button>
+      <button id="nav-fornecedores" class="nav-btn px-4 py-2 rounded-lg font-semibold">🚚 Fornecedores</button>
+      <button id="nav-relatorios" class="nav-btn px-4 py-2 rounded-lg font-semibold relative">📊 Relatórios<div
+          id="alerta-relatorios" class="alerta-estoque hidden"></div></button>
+      <button id="nav-configuracoes" class="nav-btn px-4 py-2 rounded-lg font-semibold">⚙️ Configurações</button>
+      <button id="nav-sair" class="nav-btn bg-red-100 text-red-700 px-4 py-2 rounded-lg font-semibold">🚪 Sair</button>
+    </nav>
+
+    <main class="flex-1 overflow-auto p-4 md:p-6">
+      <section id="tela-vendas" class="tela flex-col h-full">
+        <div class="mb-4"><input type="text" id="busca-produto" placeholder="🔎 Buscar produto por nome..."
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></div>
+        <div id="produtos-grid"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 flex-1 overflow-auto pb-4">
+        </div>
+        <div class="mt-4 p-4 bg-white rounded-lg shadow-md flex justify-between items-center">
+          <div>
+            <div id="total" class="text-3xl font-bold text-gray-800">Total: R$ 0,00</div>
+            <div id="detalhes-desconto-acrescimo" class="text-sm text-gray-600 h-4 mt-1"></div>
+          </div>
+          <div class="flex gap-2 flex-wrap justify-end">
+            <button class="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-orange-600 text-sm"
+              onclick="App.abrirModalDescontoAcrescimo('desconto')">Desconto</button>
+            <button class="bg-teal-500 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-teal-600 text-sm"
+              onclick="App.abrirModalDescontoAcrescimo('acrescimo')">Acréscimo</button>
+            <button class="bg-red-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-red-600"
+              onclick="App.cancelarVenda()">Cancelar</button>
+            <button class="bg-green-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-green-600"
+              onclick="App.irPagamento()">Avançar</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="tela-pagamento" class="tela flex-col items-center justify-center h-full">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl text-center">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800">Forma de Pagamento</h2>
+          <div id="formas-pagamento" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            <div class="forma-pagamento-btn" data-tipo="pix" onclick="App.selecionarPagamento('pix')">💸 Pix</div>
+            <div class="forma-pagamento-btn" data-tipo="credito" onclick="App.selecionarPagamento('credito')">💳 Crédito
+            </div>
+            <div class="forma-pagamento-btn" data-tipo="debito" onclick="App.selecionarPagamento('debito')">🏧 Débito
+            </div>
+            <div class="forma-pagamento-btn" data-tipo="dinheiro" onclick="App.selecionarPagamento('dinheiro')">💵
+              Dinheiro</div>
+            <div class="forma-pagamento-btn" data-tipo="fiado" onclick="App.selecionarPagamento('fiado')">📝 Fiado</div>
+            <div class="forma-pagamento-btn" data-tipo="misto" onclick="App.selecionarPagamento('misto')">🔄 Misto</div>
+          </div>
+          <div id="info-pagamento" class="min-h-[220px] flex items-center justify-center"></div>
+          <div class="flex gap-4 justify-center mt-8"><button
+              class="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-gray-600"
+              onclick="App.voltarVenda()">Voltar</button><button
+              class="bg-green-500 text-white px-6 py-3 rounded-lg font-bold shadow disabled:bg-gray-300"
+              onclick="App.finalizarVenda()" disabled id="btn-finalizar">Finalizar Venda</button></div>
+        </div>
+      </section>
+
+      <section id="tela-finalizado" class="tela flex-col items-center justify-center h-full text-center">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+          <h1 class="text-4xl font-bold text-green-600 mb-4">Venda Finalizada!</h1>
+          <p class="text-gray-600 mb-6">Obrigado e volte sempre! 🎉</p>
+          <div class="flex gap-4 justify-center">
+            <button class="bg-blue-600 text-white px-8 py-4 rounded-lg font-bold shadow hover:bg-blue-700 btn-primario"
+              onclick="App.novaVenda()">Iniciar Nova Venda</button>
+            <button class="bg-gray-700 text-white px-8 py-4 rounded-lg font-bold shadow hover:bg-gray-800"
+              onclick="App.imprimirRecibo()">Imprimir Recibo</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="tela-gerenciar" class="tela flex-col h-full gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h2 id="form-title-produto" class="text-2xl font-bold mb-4 text-gray-800">Adicionar Novo Produto</h2>
+          <form id="form-cadastro-produto"
+            class="form-navegavel grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+            <div class="flex flex-col"><label for="nome-produto"
+                class="font-semibold text-gray-600 mb-1">Nome</label><input type="text" id="nome-produto" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="custo-produto" class="font-semibold text-gray-600 mb-1">Preço de
+                Custo (R$)</label><input type="number" id="custo-produto" step="0.01" min="0" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="preco-produto" class="font-semibold text-gray-600 mb-1">Preço de
+                Venda (R$)</label><input type="number" id="preco-produto" step="0.01" min="0" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="estoque-produto" class="font-semibold text-gray-600 mb-1">Qtde. em
+                Estoque</label><input type="number" id="estoque-produto" step="1" min="0" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="estoque-minimo-produto"
+                class="font-semibold text-gray-600 mb-1">Estoque Mínimo</label><input type="number"
+                id="estoque-minimo-produto" step="1" min="0" required class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="imagem-produto"
+                class="font-semibold text-gray-600 mb-1">Imagem</label><input type="file" id="imagem-produto"
+                accept="image/*"
+                class="p-2 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+            <div class="flex gap-2"><button type="submit"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar</button><button
+                type="button" id="btn-cancelar-edicao-produto" onclick="App.cancelarEdicaoProduto()"
+                class="w-full bg-gray-500 text-white p-3 rounded-lg font-bold hidden">Cancelar</button></div>
+          </form>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">Produtos Cadastrados</h2>
+            <input type="text" id="busca-produto-gerenciar" placeholder="🔎 Buscar..."
+              class="p-2 border rounded-lg w-full max-w-xs">
+          </div>
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-3">Imagem</th>
+                  <th class="p-3">Nome</th>
+                  <th class="p-3">Estoque</th>
+                  <th class="p-3">Custo</th>
+                  <th class="p-3">Venda</th>
+                  <th class="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-produtos-gerenciar"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <section id="tela-clientes" class="tela flex-col h-full gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h2 id="form-title-cliente" class="text-2xl font-bold mb-4 text-gray-800">Adicionar Novo Cliente</h2>
+          <form id="form-cadastro-cliente" class="form-navegavel grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div class="flex flex-col"><label for="nome-cliente"
+                class="font-semibold text-gray-600 mb-1">Nome</label><input type="text" id="nome-cliente" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="telefone-cliente"
+                class="font-semibold text-gray-600 mb-1">Telefone</label><input type="text" id="telefone-cliente"
+                class="p-3 border rounded-lg"></div>
+            <div class="flex gap-2"><button type="submit"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar</button><button
+                type="button" id="btn-cancelar-edicao-cliente" onclick="App.cancelarEdicaoCliente()"
+                class="w-full bg-gray-500 text-white p-3 rounded-lg font-bold hidden">Cancelar</button></div>
+          </form>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">Clientes Cadastrados</h2>
+            <input type="text" id="busca-cliente-gerenciar" placeholder="🔎 Buscar..."
+              class="p-2 border rounded-lg w-full max-w-xs">
+          </div>
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-3">Nome</th>
+                  <th class="p-3">Telefone</th>
+                  <th class="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-clientes-gerenciar"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <section id="tela-fornecedores" class="tela flex-col h-full gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h2 id="form-title-fornecedor" class="text-2xl font-bold mb-4 text-gray-800">Adicionar Novo Fornecedor</h2>
+          <form id="form-cadastro-fornecedor" class="form-navegavel grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div class="flex flex-col"><label for="nome-fornecedor"
+                class="font-semibold text-gray-600 mb-1">Nome</label><input type="text" id="nome-fornecedor" required
+                class="p-3 border rounded-lg"></div>
+            <div class="flex flex-col"><label for="contato-fornecedor" class="font-semibold text-gray-600 mb-1">Contato
+                (Tel/Email)</label><input type="text" id="contato-fornecedor" class="p-3 border rounded-lg"></div>
+            <div class="flex gap-2"><button type="submit"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar</button><button
+                type="button" id="btn-cancelar-edicao-fornecedor" onclick="App.cancelarEdicaoFornecedor()"
+                class="w-full bg-gray-500 text-white p-3 rounded-lg font-bold hidden">Cancelar</button></div>
+          </form>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">Fornecedores Cadastrados</h2>
+            <input type="text" id="busca-fornecedor-gerenciar" placeholder="🔎 Buscar..."
+              class="p-2 border rounded-lg w-full max-w-xs">
+          </div>
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-3">Nome</th>
+                  <th class="p-3">Contato</th>
+                  <th class="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-fornecedores-gerenciar"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="tela-relatorios" class="tela flex-col h-full gap-4">
+        <div class="bg-white p-4 rounded-xl shadow-lg">
+          <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+            <h2 class="text-2xl font-bold text-gray-800">Relatórios</h2>
+            <div class="flex items-center gap-2"><label for="filtro-data-relatorio"
+                class="font-semibold">Período:</label><select id="filtro-data-relatorio" class="p-2 border rounded-lg">
+                <option value="hoje">Hoje</option>
+                <option value="7dias">Últimos 7 dias</option>
+                <option value="mes">Este Mês</option>
+                <option value="todos">Todos</option>
+              </select></div>
+          </div>
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px gap-6">
+              <button id="tab-dashboard"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg tab-btn-active">Dashboard</button>
+              <button id="tab-graficos"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Gráficos</button>
+              <button id="tab-lucratividade"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Lucratividade</button>
+              <button id="tab-abc"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Curva
+                ABC</button>
+              <button id="tab-historico"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Histórico</button>
+              <button id="tab-fiado"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Contas
+                a Receber</button>
+              <button id="tab-estoque"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Estoque
+                Baixo</button>
+            </nav>
+          </div>
+        </div>
+        <div id="conteudo-dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        <div id="conteudo-graficos" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg"><canvas id="grafico-pagamentos"></canvas></div>
+          <div class="bg-white p-6 rounded-xl shadow-lg"><canvas id="grafico-produtos"></canvas></div>
+          <div class="bg-white p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2"><canvas
+              id="grafico-faturamento"></canvas></div>
+        </div>
+        <div id="conteudo-lucratividade" class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto hidden"></div>
+        <div id="conteudo-abc" class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto hidden"></div>
+        <div id="conteudo-historico" class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto hidden"></div>
+        <div id="conteudo-fiado" class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto hidden"></div>
+        <div id="conteudo-estoque" class="bg-white p-6 rounded-xl shadow-lg flex-1 overflow-auto hidden"></div>
+      </section>
+
+      <section id="tela-configuracoes" class="tela flex-col h-full gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h2 class="text-2xl font-bold mb-4 text-gray-800">Configurações do Sistema</h2>
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px gap-6">
+              <button id="tab-bandeiras"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg tab-btn-active">Bandeiras</button>
+              <button id="tab-usuarios"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Usuários</button>
+              <button id="tab-sistema"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Sistema</button>
+              <button id="tab-dados"
+                class="tab-btn py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Dados</button>
+            </nav>
+          </div>
+
+          <div id="conteudo-bandeiras" class="mt-6">
+            <form id="form-cadastro-bandeira" class="form-navegavel grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div class="flex flex-col"><label for="nome-bandeira" class="font-semibold text-gray-600 mb-1">Nome (Ex:
+                  Visa Crédito)</label><input type="text" id="nome-bandeira" required class="p-3 border rounded-lg">
+              </div>
+              <div class="flex flex-col"><label for="taxa-bandeira" class="font-semibold text-gray-600 mb-1">Taxa
+                  (%)</label><input type="number" id="taxa-bandeira" step="0.01" min="0" required
+                  class="p-3 border rounded-lg"></div>
+              <div class="flex flex-col"><label for="tipo-bandeira"
+                  class="font-semibold text-gray-600 mb-1">Tipo</label>
+                <select id="tipo-bandeira" class="p-3 border rounded-lg bg-white">
+                  <option value="credito">Crédito</option>
+                  <option value="debito">Débito</option>
+                </select>
+              </div>
+              <div class="flex gap-2"><button type="submit"
+                  class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar</button><button
+                  type="button" id="btn-cancelar-edicao-bandeira" onclick="App.cancelarEdicaoBandeira()"
+                  class="w-full bg-gray-500 text-white p-3 rounded-lg font-bold hidden">Cancelar</button></div>
+            </form>
+            <div class="mt-6 overflow-x-auto">
+              <table class="w-full text-left">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="p-3">Nome</th>
+                    <th class="p-3">Taxa</th>
+                    <th class="p-3">Tipo</th>
+                    <th class="p-3 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="lista-bandeiras-gerenciar"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="conteudo-usuarios" class="mt-6 hidden">
+            <h3 class="text-xl font-bold mb-4">Gerenciamento de Usuários</h3>
+            <form id="form-cadastro-usuario" class="form-navegavel grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div class="flex flex-col">
+                <label for="nome-usuario-cadastro" class="font-semibold text-gray-600 mb-1">Nome de Usuário</label>
+                <input type="text" id="nome-usuario-cadastro" required class="p-3 border rounded-lg">
+              </div>
+              <div class="flex flex-col">
+                <label for="senha-usuario-cadastro" class="font-semibold text-gray-600 mb-1">Senha</label>
+                <input type="password" id="senha-usuario-cadastro" required class="p-3 border rounded-lg">
+              </div>
+              <div class="flex gap-2">
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar
+                  Usuário</button>
+              </div>
+            </form>
+            <div class="mt-6 overflow-x-auto">
+              <table class="w-full text-left">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="p-3">Usuário</th>
+                    <th class="p-3 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="lista-usuarios-gerenciar"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="conteudo-sistema" class="mt-6 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 class="text-xl font-bold mb-2">QR Codes PIX</h3>
+                <p class="text-gray-600 mb-4">Adicione e gerencie múltiplos QR Codes para o PIX.</p>
+                <form id="form-cadastro-pix" class="space-y-4">
+                  <input type="hidden" id="pix-id-edicao">
+                  <div>
+                    <label for="nome-pix" class="font-semibold text-gray-600 mb-1 block">Nome de Identificação</label>
+                    <input type="text" id="nome-pix" class="w-full p-3 border rounded-lg"
+                      placeholder="Ex: PIX Celular, PIX CNPJ" required>
+                  </div>
+                  <div>
+                    <label for="imagem-pix" class="font-semibold text-gray-600 mb-1 block">Imagem do QR Code</label>
+                    <input type="file" id="imagem-pix" accept="image/*"
+                      class="p-2 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full">
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="submit"
+                      class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold btn-primario">Salvar PIX</button>
+                    <button type="button" id="btn-cancelar-edicao-pix"
+                      class="w-full bg-gray-500 text-white p-3 rounded-lg font-bold hidden">Cancelar</button>
+                  </div>
+                </form>
+                <div id="lista-pix-gerenciar" class="mt-6 space-y-2"></div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold mb-2">Customização da Aparência</h3>
+                <div class="space-y-4">
+                  <div>
+                    <label for="nome-empresa" class="font-semibold text-gray-600 mb-1 block">Nome da Empresa</label>
+                    <input type="text" id="nome-empresa" class="w-full p-3 border rounded-lg"
+                      placeholder="Ex: Miro Gás & Água">
+                  </div>
+                  <div>
+                    <label for="imagem-logo" class="font-semibold text-gray-600 mb-1 block">Logotipo da Empresa</label>
+                    <input type="file" id="imagem-logo" accept="image/png, image/jpeg, image/svg+xml"
+                      class="p-2 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full">
+                    <div id="logo-preview"
+                      class="mt-4 bg-gray-100 p-4 rounded-lg flex items-center justify-center h-24"></div>
+                  </div>
+                  <div>
+                    <label for="cor-tema" class="font-semibold text-gray-600 mb-1 block">Cor Principal do Tema</label>
+                    <input type="color" id="cor-tema" class="w-full h-12 p-1 border rounded-lg">
+                  </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-4">
+                  <button id="btn-redefinir-aparencia"
+                    class="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-gray-600">Redefinir</button>
+                  <button id="btn-salvar-aparencia"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-blue-700 btn-primario">Salvar
+                    Aparência</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="conteudo-dados" class="mt-6 hidden">
+            <h3 class="text-xl font-bold mb-2">Gerenciamento de Dados</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><button onclick="App.exportarDados()"
+                class="bg-green-600 text-white p-4 rounded-lg font-bold">Exportar (Backup)</button><button
+                onclick="document.getElementById('import-file-input').click()"
+                class="bg-yellow-500 text-white p-4 rounded-lg font-bold">Importar (Restaurar)</button><input
+                type="file" id="import-file-input" class="hidden" accept=".json"><button
+                onclick="App.confirmarLimpezaTotal()" class="bg-red-700 text-white p-4 rounded-lg font-bold">Limpar
+                Banco de Dados</button></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div id="modal-content"
+      class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md text-center transform transition-all scale-95 opacity-0">
+      <p id="modal-message" class="text-lg text-gray-700 mb-6"></p>
+      <div id="modal-buttons" class="flex gap-4 justify-center"></div>
+    </div>
+  </div>
+
+  <div id="modal-detalhes-fiado"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-3xl transform transition-all scale-95 opacity-0">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="modal-fiado-title" class="text-2xl font-bold text-gray-800">Detalhes da Dívida</h2>
+        <button onclick="App.fecharDetalhesFiado()"
+          class="text-2xl font-bold text-gray-500 hover:text-gray-800">&times;</button>
+      </div>
+      <div class="overflow-y-auto max-h-[60vh]">
+        <table class="w-full text-left">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-2 w-10"><input type="checkbox" id="selecionar-todas-dividas"></th>
+              <th class="p-3">Data/Hora</th>
+              <th class="p-3">Itens</th>
+              <th class="p-3 text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody id="modal-fiado-tbody"></tbody>
+        </table>
+      </div>
+      <div class="mt-6 flex justify-between items-center">
+        <div>
+          <span class="text-lg font-semibold text-gray-700">Total da Dívida:</span>
+          <span id="modal-fiado-total-geral" class="text-lg font-bold text-red-600"></span>
+        </div>
+        <div>
+          <span class="text-lg font-semibold text-gray-700">Total Selecionado:</span>
+          <span id="modal-fiado-total-selecionado" class="text-lg font-bold text-green-600">R$ 0,00</span>
+        </div>
+        <button id="modal-fiado-quitar-btn"
+          class="bg-green-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-green-600 disabled:bg-gray-300"
+          disabled>Quitar Dívidas Selecionadas</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-selecionar-pix"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm text-center">
+      <h3 class="text-xl font-bold mb-4">Selecione o QR Code PIX</h3>
+      <div id="lista-pix-modal" class="space-y-2 max-h-60 overflow-y-auto text-left"></div>
+      <div id="pix-qrcode-modal-preview" class="my-4 min-h-[100px] flex items-center justify-center"></div>
+      <div class="flex gap-4 justify-center">
+        <button id="btn-cancelar-pix-misto" class="bg-gray-300 px-6 py-2 rounded-lg font-bold">Cancelar</button>
+        <button id="btn-confirmar-pix-misto"
+          class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold btn-primario">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+
+</body>
+
+</html>
