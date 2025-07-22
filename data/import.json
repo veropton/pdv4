@@ -1,0 +1,136 @@
+{
+  "usuarios": [{
+      "id": 1,
+      "usuario": "admin",
+      "senha": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+    },
+    {
+      "id": 2,
+      "usuario": "vendedor",
+      "senha": "9365349a628833932758a853298845115863261734f4543b5993b4694432d56d"
+    }
+  ],
+  "produtos": [{
+      "nome": "Botijão de Gás P13",
+      "custo": 85.50,
+      "preco": 110.00,
+      "estoque": 50,
+      "estoqueMinimo": 10,
+      "nomeNormalizado": "botijao de gas p13",
+      "imagem": ""
+    },
+    {
+      "nome": "Água Mineral 20L",
+      "custo": 8.00,
+      "preco": 12.00,
+      "estoque": 80,
+      "estoqueMinimo": 20,
+      "nomeNormalizado": "agua mineral 20l",
+      "imagem": ""
+    },
+    {
+      "nome": "Galão de Água 10L",
+      "custo": 6.00,
+      "preco": 10.00,
+      "estoque": 30,
+      "estoqueMinimo": 15,
+      "nomeNormalizado": "galao de agua 10l",
+      "imagem": ""
+    },
+    {
+      "nome": "Refrigerante 2L",
+      "custo": 7.50,
+      "preco": 9.90,
+      "estoque": 45,
+      "estoqueMinimo": 10,
+      "nomeNormalizado": "refrigerante 2l",
+      "imagem": ""
+    }
+  ],
+  "clientes": [{
+      "id": 1,
+      "nome": "João da Silva",
+      "telefone": "48 99999-1111"
+    },
+    {
+      "id": 2,
+      "nome": "Maria Oliveira",
+      "telefone": "48 98888-2222"
+    },
+    {
+      "id": 3,
+      "nome": "Cliente Balcão",
+      "telefone": ""
+    }
+  ],
+  "fornecedores": [{
+      "id": 1,
+      "nome": "Distribuidora de Gás Central",
+      "contato": "contato@gascentral.com"
+    },
+    {
+      "id": 2,
+      "nome": "Fonte Água Pura",
+      "contato": "48 3232-4050"
+    }
+  ],
+  "bandeiras": [{
+      "id": 1,
+      "nome": "Visa Crédito",
+      "taxa": 2.99
+    },
+    {
+      "id": 2,
+      "nome": "Mastercard Crédito",
+      "taxa": 3.10
+    },
+    {
+      "id": 3,
+      "nome": "Elo Débito",
+      "taxa": 1.99
+    }
+  ],
+  "vendas": [{
+      "id": 1,
+      "dataHora": "2025-07-15T14:30:00.000Z",
+      "itens": [{
+          "nome": "Botijão de Gás P13",
+          "preco": 110.00,
+          "custo": 85.50,
+          "quantidade": 1
+        },
+        {
+          "nome": "Água Mineral 20L",
+          "preco": 12.00,
+          "custo": 8.00,
+          "quantidade": 2
+        }
+      ],
+      "total": 134.00,
+      "formaPagamento": "dinheiro",
+      "troco": 6.00,
+      "status": "concluida",
+      "clienteId": 3,
+      "bandeiraId": null,
+      "valorTaxa": 0
+    },
+    {
+      "id": 2,
+      "dataHora": "2025-07-16T10:15:00.000Z",
+      "itens": [{
+        "nome": "Galão de Água 10L",
+        "preco": 10.00,
+        "custo": 6.00,
+        "quantidade": 5
+      }],
+      "total": 50.00,
+      "formaPagamento": "fiado",
+      "troco": 0,
+      "status": "pendente",
+      "clienteId": 1,
+      "bandeiraId": null,
+      "valorTaxa": 0
+    }
+  ],
+  "configuracoes": []
+}

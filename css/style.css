@@ -1,0 +1,172 @@
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  --cor-primaria: #2563eb; 
+  --cor-primaria-hover: #3b82f6;
+}
+
+.tela {
+  display: none;
+}
+
+.ativo {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ativo {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.nav-btn-active {
+  background-color: var(--cor-primaria);
+  color: white;
+}
+
+.nav-btn {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.tab-btn {
+  transition: all 0.2s;
+}
+
+.tab-btn-active {
+  border-color: var(--cor-primaria);
+  color: var(--cor-primaria);
+}
+
+.forma-pagamento-btn {
+  padding: 1rem;
+  border-width: 2px;
+  border-color: #d1d5db;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.forma-pagamento-btn:hover {
+  border-color: var(--cor-primaria-hover);
+  background-color: #eff6ff;
+}
+
+.forma-pagamento-btn.selected {
+  border-color: var(--cor-primaria);
+  background-color: var(--cor-primaria);
+  color: white;
+  --tw-ring-color: var(--cor-primaria);
+  box-shadow: 0 0 0 2px var(--tw-ring-color);
+}
+
+@keyframes flash-border {
+  0% {
+    border-color: #10b981;
+  }
+
+  100% {
+    border-color: #d1d5db;
+  }
+}
+
+.flash-success {
+  animation: flash-border 0.7s ease-out;
+}
+
+.alerta-estoque {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  background-color: red;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .recibo-imprimivel,
+  .recibo-imprimivel * {
+    visibility: visible;
+  }
+
+  .recibo-imprimivel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    color: black;
+  }
+
+  .recibo-imprimivel h1 {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .recibo-imprimivel p {
+    font-size: 12px;
+    margin: 2px 0;
+  }
+
+  .recibo-imprimivel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .recibo-imprimivel th,
+  .recibo-imprimivel td {
+    text-align: left;
+    padding: 2px;
+  }
+
+  .recibo-imprimivel .text-right {
+    text-align: right;
+  }
+
+  .recibo-imprimivel hr {
+    border-top: 1px dashed black;
+  }
+}
